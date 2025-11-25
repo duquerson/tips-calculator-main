@@ -1,3 +1,4 @@
+//@ts-nocheck
 import IconDollar from './assets/images/icon-dollar.svg?react'
 import IconPeople from './assets/images/icon-person.svg?react'
 import Logo from './assets/images/logo.svg?react'
