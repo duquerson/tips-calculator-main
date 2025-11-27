@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@theme{
+@theme {
 	--text-inputs: 1.5rem;
 	--color-primary-green: hsl(172, 67%, 45%);
 	--color-neutral-green-900: hsl(183, 100%, 15%);
@@ -8,5 +8,5 @@
 	--color-neutral-grey-200: hsl(185, 41%, 84%);
 	--color-neutral-grey-50: hsl(189, 47%, 97%);
 	--color-neutral-white: hsl(0, 0%, 100%);
-	--font-mono: 'Space Mono', monospace;
+	--font-mono: "Space Mono", monospace;
 }
