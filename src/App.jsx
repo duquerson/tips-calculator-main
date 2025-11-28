@@ -6,7 +6,7 @@ import Logo from "./assets/images/logo.svg?react";
 export default function App() {
 	return (
 		<main className="flex min-h-screen min-w-full flex-col justify-center bg-primary-green/50 font-mono">
-			<Logo className="mx-auto mt-32 mb-4" />
+			<Logo className="mx-auto mt-32 mb-4" aria-hidden="true" />
 			<Calculator />
 		</main>
 	);
@@ -14,7 +14,10 @@ export default function App() {
 
 const Calculator = () => {
 	return (
-		<section className="min-w-93.75 rounded-2xl bg-neutral-white p-8 text-neutral-green-900 shadow-xl">
+		<section
+			className="min-w-93.75 rounded-2xl bg-neutral-white p-8 text-neutral-green-900 shadow-xl"
+			aria-label="Tip calculator"
+		>
 			<Tips />
 			<TipsResult />
 		</section>
@@ -24,50 +27,94 @@ const Calculator = () => {
 const Tips = () => {
 	return (
 		<>
-			<h1 className="mb-3 text-xs text-neutral-grey-500">Bill</h1>
-			<Inputs icon="dollar" text="0" id="bill" name="bill" />
+			<h1 className="mb-3 text-xs text-neutral-grey-500">Bill amount</h1>
+			<Inputs
+				icon="dollar"
+				text="0"
+				id="bill"
+				name="bill"
+				ariaLabel="Bill amount in dollars"
+			/>
+
 			<h2 className="mb-4 text-xs font-semibold text-neutral-grey-500">
-				Select Tip %
+				Select tip %
 			</h2>
-			<section className="mb-10 grid grid-cols-2 grid-rows-3 gap-7 text-white">
+
+			<section
+				className="mb-10 grid grid-cols-2 grid-rows-3 gap-7 text-white"
+				role="list"
+			>
 				{[5, 10, 15, 25, 50].map((percent) => {
 					return (
-						<Button key={percent} text={`${percent}%`} id={`${percent}`} />
+						<Button
+							key={percent}
+							text={`${percent}%`}
+							id={`tip-${percent}`}
+							ariaLabel={`Select ${percent} percent tip`}
+						/>
 					);
 				})}
-				<div className="flex min-w-28 items-center justify-between rounded-md border-2 border-transparent bg-neutral-grey-200/50 px-5 py-3 hover:cursor-pointer hover:border-primary-green">
+
+				<div
+					className="flex min-w-28 items-center justify-between rounded-md border-2 border-transparent bg-neutral-grey-200/50 px-5 py-3 hover:cursor-pointer hover:border-primary-green"
+					role="group"
+					aria-label="Custom tip percentage"
+				>
+					<label htmlFor="custom" className="sr-only">
+						Custom tip percentage
+					</label>
 					<input
-						type="number"
+						type="text"
+						inputMode="decimal"
+						pattern="[0-9]*"
 						name="custom"
 						id="custom"
 						placeholder="Custom"
+						aria-label="Custom tip percentage (in percent)"
 						className="w-full bg-transparent text-right text-xl font-semibold text-cyan-950 focus:outline-none"
 					/>
 				</div>
 			</section>
+
 			<h2 className="mb-3 text-xs font-semibold text-neutral-grey-500">
-				Number of People
+				Number of people
 			</h2>
-			<Inputs icon="people" text="0" id="people" name="people" />
+			<Inputs
+				icon="people"
+				text="0"
+				id="people"
+				name="people"
+				ariaLabel="Number of people sharing the bill"
+			/>
 		</>
 	);
 };
 
 const TipsResult = () => {
 	return (
-		<article className="flex flex-col gap-8 rounded-xl bg-neutral-green-900 p-7">
-			<section className="flex justify-between">
+		<article
+			className="flex flex-col gap-8 rounded-xl bg-neutral-green-900 p-7"
+			aria-label="Results"
+		>
+			<section className="flex justify-between" aria-hidden={false}>
 				<div className="flex flex-col">
-					<h2 className="text-white">Tip Amount</h2>
+					<h2 className="text-white">Tip amount</h2>
 					<h3 className="text-xs text-neutral-grey-500">/ person</h3>
 				</div>
 				<p
 					id="tip-amount"
 					className="flex items-center text-xl font-semibold text-primary-green"
+					aria-live="polite"
+					aria-atomic="true"
+					role="status"
 				>
-					<span className="mr-1 text-2xl">$</span> 0.00
+					<span className="mr-1 text-2xl" aria-hidden="true">
+						$
+					</span>{" "}
+					0.00
 				</p>
 			</section>
+
 			<section className="flex justify-between">
 				<div className="flex flex-col">
 					<h2 className="text-white">Total</h2>
@@ -76,12 +123,22 @@ const TipsResult = () => {
 				<p
 					id="total"
 					className="flex items-center text-xl font-semibold text-primary-green"
+					aria-live="polite"
+					aria-atomic="true"
+					role="status"
 				>
-					{" "}
-					<span className="mr-1 text-2xl">$</span> 0.00
+					<span className="mr-1 text-2xl" aria-hidden="true">
+						$
+					</span>{" "}
+					0.00
 				</p>
 			</section>
-			<button className="rounded-md bg-primary-green px-5 py-3 text-xl font-semibold text-neutral-green-900 transition hover:cursor-pointer hover:bg-primary-green/50 hover:text-white">
+
+			<button
+				className="rounded-md bg-primary-green px-5 py-3 text-xl font-semibold text-neutral-green-900 transition hover:cursor-pointer hover:bg-primary-green/50 hover:text-white"
+				aria-label="Reset calculator"
+				type="button"
+			>
 				RESET
 			</button>
 		</article>
@@ -93,24 +150,35 @@ const Inputs = ({
 	text = "0",
 	id = "bill",
 	name = "bill",
+	ariaLabel = "",
 }) => {
+	const fallbackLabel =
+		icon === "dollar" ? "Bill amount in dollars" : "Number of people";
+
 	return (
 		<section
 			className="mb-8 flex items-center justify-between rounded-md border-2 border-transparent bg-neutral-grey-200/50 px-5 py-3 hover:cursor-pointer hover:border-primary-green"
 			id={id}
 		>
 			{icon === "dollar" ? (
-				<IconDollar className="h-4" />
+				<IconDollar className="h-4" aria-hidden="true" focusable="false" />
 			) : (
-				<IconPeople className="h-4" />
+				<IconPeople className="h-4" aria-hidden="true" focusable="false" />
 			)}
 
 			<div>
+				<label htmlFor={id} className="sr-only">
+					{ariaLabel || fallbackLabel}
+				</label>
+
 				<input
-					type="number"
+					type="text"
+					inputMode="decimal"
+					pattern={icon === "dollar" ? "[0-9]*[.]?[0-9]*" : "[0-9]*"}
 					id={id}
 					name={name}
 					placeholder={text}
+					aria-label={ariaLabel || fallbackLabel}
 					className="w-24 bg-transparent text-right text-inputs font-semibold text-cyan-950 focus:outline-none"
 				/>
 			</div>
@@ -118,12 +186,13 @@ const Inputs = ({
 	);
 };
 
-const Button = ({ text = "Reset", id = "" }) => {
+const Button = ({ text = "Reset", id = "", ariaLabel = "" }) => {
 	return (
 		<button
 			type="button"
 			className="min-w-28 rounded-md bg-neutral-green-900 px-5 py-3 text-center text-xl font-semibold transition hover:cursor-pointer hover:bg-primary-green/80 hover:text-neutral-green-900"
 			id={id}
+			aria-label={ariaLabel || `Select ${text}`}
 		>
 			{text}
 		</button>
