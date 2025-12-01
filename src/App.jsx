@@ -1,11 +1,11 @@
 //@ts-nocheck
-import IconDollar from "./assets/images/icon-dollar.svg?react";
-import IconPeople from "./assets/images/icon-person.svg?react";
-import Logo from "./assets/images/logo.svg?react";
+import IconDollar from './assets/images/icon-dollar.svg?react';
+import IconPeople from './assets/images/icon-person.svg?react';
+import Logo from './assets/images/logo.svg?react';
 
 export default function App() {
 	return (
-		<main className="flex min-h-screen min-w-full flex-col justify-center bg-primary-green/50 font-mono">
+		<main className="flex min-h-screen min-w-full flex-col justify-center bg-primary-green/50 font-mono md:items-center">
 			<Logo className="mx-auto mt-32 mb-4" aria-hidden="true" />
 			<Calculator />
 		</main>
@@ -15,7 +15,7 @@ export default function App() {
 const Calculator = () => {
 	return (
 		<section
-			className="min-w-93.75 rounded-2xl bg-neutral-white p-8 text-neutral-green-900 shadow-xl"
+			className="min-w-93.75 rounded-2xl bg-neutral-white p-8 text-neutral-green-900 shadow-xl md:flex md:h-[490px] md:w-[950px] md:p-10"
 			aria-label="Tip calculator"
 		>
 			<Tips />
@@ -26,22 +26,14 @@ const Calculator = () => {
 
 const Tips = () => {
 	return (
-		<>
+		<div className="md:w-1/2 md:pr-8">
 			<h1 className="mb-3 text-xs text-neutral-grey-500">Bill amount</h1>
-			<Inputs
-				icon="dollar"
-				text="0"
-				id="bill"
-				name="bill"
-				ariaLabel="Bill amount in dollars"
-			/>
+			<Inputs icon="dollar" text="0" id="bill" name="bill" ariaLabel="Bill amount in dollars" />
 
-			<h2 className="mb-4 text-xs font-semibold text-neutral-grey-500">
-				Select tip %
-			</h2>
+			<h2 className="mb-4 text-xs font-semibold text-neutral-grey-500 md:mb-3">Select tip %</h2>
 
 			<section
-				className="mb-10 grid grid-cols-2 grid-rows-3 gap-7 text-white"
+				className="mb-10 grid grid-cols-2 grid-rows-3 gap-7 text-white md:mb-8 md:grid-cols-3 md:grid-rows-2 md:gap-5"
 				role="list"
 			>
 				{[5, 10, 15, 25, 50].map((percent) => {
@@ -76,9 +68,7 @@ const Tips = () => {
 				</div>
 			</section>
 
-			<h2 className="mb-3 text-xs font-semibold text-neutral-grey-500">
-				Number of people
-			</h2>
+			<h2 className="mb-3 text-xs font-semibold text-neutral-grey-500">Number of people</h2>
 			<Inputs
 				icon="people"
 				text="0"
@@ -86,54 +76,55 @@ const Tips = () => {
 				name="people"
 				ariaLabel="Number of people sharing the bill"
 			/>
-		</>
+		</div>
 	);
 };
 
 const TipsResult = () => {
 	return (
 		<article
-			className="flex flex-col gap-8 rounded-xl bg-neutral-green-900 p-7"
+			className="flex w-full flex-col gap-8.5 rounded-xl bg-neutral-green-900 p-7 md:w-1/2 md:justify-between"
 			aria-label="Results"
 		>
-			<section className="flex justify-between" aria-hidden={false}>
-				<div className="flex flex-col">
-					<h2 className="text-white">Tip amount</h2>
-					<h3 className="text-xs text-neutral-grey-500">/ person</h3>
-				</div>
-				<p
-					id="tip-amount"
-					className="flex items-center text-xl font-semibold text-primary-green"
-					aria-live="polite"
-					aria-atomic="true"
-					role="status"
-				>
-					<span className="mr-1 text-2xl" aria-hidden="true">
-						$
-					</span>{" "}
-					0.00
-				</p>
-			</section>
+			<div className="flex h-full flex-col">
+				<section className="mt-4 flex justify-between" aria-hidden={false}>
+					<div className="flex flex-col">
+						<h2 className="text-white">Tip amount</h2>
+						<h3 className="text-xs text-neutral-grey-500">/ person</h3>
+					</div>
+					<p
+						id="tip-amount"
+						className="flex items-center text-2xl font-semibold text-primary-green"
+						aria-live="polite"
+						aria-atomic="true"
+						role="status"
+					>
+						<span className="mr-1 text-2xl" aria-hidden="true">
+							$
+						</span>{' '}
+						0.00
+					</p>
+				</section>
 
-			<section className="flex justify-between">
-				<div className="flex flex-col">
-					<h2 className="text-white">Total</h2>
-					<h3 className="text-xs text-neutral-grey-500">/ person</h3>
-				</div>
-				<p
-					id="total"
-					className="flex items-center text-xl font-semibold text-primary-green"
-					aria-live="polite"
-					aria-atomic="true"
-					role="status"
-				>
-					<span className="mr-1 text-2xl" aria-hidden="true">
-						$
-					</span>{" "}
-					0.00
-				</p>
-			</section>
-
+				<section className="mt-10 flex justify-between">
+					<div className="flex flex-col">
+						<h2 className="text-white">Total</h2>
+						<h3 className="text-xs text-neutral-grey-500">/ person</h3>
+					</div>
+					<p
+						id="total"
+						className="flex items-center text-2xl font-semibold text-primary-green"
+						aria-live="polite"
+						aria-atomic="true"
+						role="status"
+					>
+						<span className="mr-1 text-2xl" aria-hidden="true">
+							$
+						</span>{' '}
+						0.00
+					</p>
+				</section>
+			</div>
 			<button
 				className="rounded-md bg-primary-green px-5 py-3 text-xl font-semibold text-neutral-green-900 transition hover:cursor-pointer hover:bg-primary-green/50 hover:text-white"
 				aria-label="Reset calculator"
@@ -145,22 +136,15 @@ const TipsResult = () => {
 	);
 };
 
-const Inputs = ({
-	icon = "dollar",
-	text = "0",
-	id = "bill",
-	name = "bill",
-	ariaLabel = "",
-}) => {
-	const fallbackLabel =
-		icon === "dollar" ? "Bill amount in dollars" : "Number of people";
+const Inputs = ({ icon = 'dollar', text = '0', id = 'bill', name = 'bill', ariaLabel = '' }) => {
+	const fallbackLabel = icon === 'dollar' ? 'Bill amount in dollars' : 'Number of people';
 
 	return (
 		<section
-			className="mb-8 flex items-center justify-between rounded-md border-2 border-transparent bg-neutral-grey-200/50 px-5 py-3 hover:cursor-pointer hover:border-primary-green"
+			className="mb-8 flex items-center justify-between rounded-md border-2 border-transparent bg-neutral-grey-200/50 px-5 py-3 hover:cursor-pointer hover:border-primary-green md:mb-6"
 			id={id}
 		>
-			{icon === "dollar" ? (
+			{icon === 'dollar' ? (
 				<IconDollar className="h-4" aria-hidden="true" focusable="false" />
 			) : (
 				<IconPeople className="h-4" aria-hidden="true" focusable="false" />
@@ -174,7 +158,7 @@ const Inputs = ({
 				<input
 					type="text"
 					inputMode="decimal"
-					pattern={icon === "dollar" ? "[0-9]*[.]?[0-9]*" : "[0-9]*"}
+					pattern={icon === 'dollar' ? '[0-9]*[.]?[0-9]*' : '[0-9]*'}
 					id={id}
 					name={name}
 					placeholder={text}
@@ -186,7 +170,7 @@ const Inputs = ({
 	);
 };
 
-const Button = ({ text = "Reset", id = "", ariaLabel = "" }) => {
+const Button = ({ text = 'Reset', id = '', ariaLabel = '' }) => {
 	return (
 		<button
 			type="button"
