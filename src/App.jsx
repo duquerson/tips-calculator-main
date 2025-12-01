@@ -5,8 +5,8 @@ import Logo from './assets/images/logo.svg?react';
 
 export default function App() {
 	return (
-		<main className="flex min-h-screen min-w-full flex-col justify-center bg-primary-green/50 font-mono md:items-center">
-			<Logo className="mx-auto mt-32 mb-4" aria-hidden="true" />
+		<main className="flex min-h-screen min-w-full flex-col justify-center bg-primary-green/50 font-mono transition-all duration-300 md:items-center">
+			<Logo className="mx-auto mt-32 mb-4 transition-all duration-300" aria-hidden="true" />
 			<Calculator />
 		</main>
 	);
@@ -15,7 +15,7 @@ export default function App() {
 const Calculator = () => {
 	return (
 		<section
-			className="min-w-93.75 rounded-2xl bg-neutral-white p-8 text-neutral-green-900 shadow-xl md:flex md:h-[490px] md:w-[950px] md:p-10"
+			className="min-w-93.75 rounded-2xl bg-neutral-white p-8 text-neutral-green-900 shadow-xl transition-all duration-300 md:flex md:h-[490px] md:w-[950px] md:p-10"
 			aria-label="Tip calculator"
 		>
 			<Tips />
@@ -26,14 +26,14 @@ const Calculator = () => {
 
 const Tips = () => {
 	return (
-		<div className="md:w-1/2 md:pr-8">
+		<div className="transition-all duration-300 md:w-1/2 md:pr-8">
 			<h1 className="mb-3 text-xs text-neutral-grey-500">Bill amount</h1>
 			<Inputs icon="dollar" text="0" id="bill" name="bill" ariaLabel="Bill amount in dollars" />
 
 			<h2 className="mb-4 text-xs font-semibold text-neutral-grey-500 md:mb-3">Select tip %</h2>
 
 			<section
-				className="mb-10 grid grid-cols-2 grid-rows-3 gap-7 text-white md:mb-8 md:grid-cols-3 md:grid-rows-2 md:gap-5"
+				className="mb-10 grid grid-cols-2 grid-rows-3 gap-7 text-white transition-all duration-300 md:mb-8 md:grid-cols-3 md:grid-rows-2 md:gap-5"
 				role="list"
 			>
 				{[5, 10, 15, 25, 50].map((percent) => {
@@ -48,7 +48,7 @@ const Tips = () => {
 				})}
 
 				<div
-					className="flex min-w-28 items-center justify-between rounded-md border-2 border-transparent bg-neutral-grey-200/50 px-5 py-3 hover:cursor-pointer hover:border-primary-green"
+					className="flex min-w-28 items-center justify-between rounded-md border-2 border-transparent bg-neutral-grey-200/50 px-5 py-3 transition-all duration-300 hover:cursor-pointer hover:border-primary-green"
 					role="group"
 					aria-label="Custom tip percentage"
 				>
@@ -83,7 +83,7 @@ const Tips = () => {
 const TipsResult = () => {
 	return (
 		<article
-			className="flex w-full flex-col gap-8.5 rounded-xl bg-neutral-green-900 p-7 md:w-1/2 md:justify-between"
+			className="flex w-full flex-col gap-8.5 rounded-xl bg-neutral-green-900 p-7 transition-all duration-300 md:w-1/2 md:justify-between"
 			aria-label="Results"
 		>
 			<div className="flex h-full flex-col">
@@ -126,7 +126,7 @@ const TipsResult = () => {
 				</section>
 			</div>
 			<button
-				className="rounded-md bg-primary-green px-5 py-3 text-xl font-semibold text-neutral-green-900 transition hover:cursor-pointer hover:bg-primary-green/50 hover:text-white"
+				className="rounded-md bg-primary-green px-5 py-3 text-xl font-semibold text-neutral-green-900 transition-all duration-300 hover:cursor-pointer hover:bg-primary-green/50 hover:text-white"
 				aria-label="Reset calculator"
 				type="button"
 			>
@@ -141,7 +141,7 @@ const Inputs = ({ icon = 'dollar', text = '0', id = 'bill', name = 'bill', ariaL
 
 	return (
 		<section
-			className="mb-8 flex items-center justify-between rounded-md border-2 border-transparent bg-neutral-grey-200/50 px-5 py-3 hover:cursor-pointer hover:border-primary-green md:mb-6"
+			className="mb-8 flex items-center justify-between rounded-md border-2 border-transparent bg-neutral-grey-200/50 px-5 py-3 transition-all duration-300 hover:cursor-pointer hover:border-primary-green md:mb-6"
 			id={id}
 		>
 			{icon === 'dollar' ? (
@@ -174,7 +174,7 @@ const Button = ({ text = 'Reset', id = '', ariaLabel = '' }) => {
 	return (
 		<button
 			type="button"
-			className="min-w-28 rounded-md bg-neutral-green-900 px-5 py-3 text-center text-xl font-semibold transition hover:cursor-pointer hover:bg-primary-green/80 hover:text-neutral-green-900"
+			className="min-w-28 rounded-md bg-neutral-green-900 px-5 py-3 text-center text-xl font-semibold transition-all duration-300 hover:cursor-pointer hover:bg-primary-green/80 hover:text-neutral-green-900"
 			id={id}
 			aria-label={ariaLabel || `Select ${text}`}
 		>
