@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import IconDollar from './assets/images/icon-dollar.svg?react';
 import IconPeople from './assets/images/icon-person.svg?react';
 import Logo from './assets/images/logo.svg?react';
-import { createContext, useContext, useState, useMemo } from 'react';
+import { createContext, useContext, useState, useMemo, memo, useCallback } from 'react';
 
 // ============================================
 // CONTEXT Y CUSTOM HOOK
@@ -18,6 +18,44 @@ const TipCalculatorProvider = ({ children }) => {
 	const [people, setPeople] = useState('');
 	const [error, setError] = useState(false);
 
+	// Sanitizador ligero reutilizable
+	const sanitize = useCallback(
+		(
+			next,
+			{ allowDecimal = false, maxIntegerDigits = Infinity, maxDecimalDigits = Infinity } = {}
+		) => {
+			// next: string
+			let s = String(next ?? '');
+
+			// eliminar todo lo que no sean dígitos o punto
+			if (allowDecimal) {
+				// conservar solo dígitos y puntos
+				s = s.replace(/[^0-9.]/g, '');
+				// si hay más de un punto, eliminar los extra (dejar el primero)
+				const parts = s.split('.');
+				if (parts.length > 2) {
+					s = parts.shift() + '.' + parts.join('');
+				}
+				// controlar longitud parte entera y decimales
+				if (s.includes('.')) {
+					const [intPart, decPart] = s.split('.');
+					const intClamped = intPart.slice(0, maxIntegerDigits);
+					const decClamped = decPart.slice(0, maxDecimalDigits);
+					s = decClamped.length > 0 ? `${intClamped}.${decClamped}` : intClamped;
+				} else {
+					s = s.slice(0, maxIntegerDigits);
+				}
+			} else {
+				// solo enteros: eliminar todo menos dígitos
+				s = s.replace(/\D/g, '');
+				s = s.slice(0, maxIntegerDigits);
+			}
+
+			return s;
+		},
+		[]
+	);
+
 	// Calcular el monto de propina por persona
 	const tipAmount = useMemo(() => {
 		if (!bill || !people || people === '0') {
@@ -27,12 +65,11 @@ const TipCalculatorProvider = ({ children }) => {
 		const billNum = parseFloat(bill);
 		const peopleNum = parseInt(people, 10);
 
-		const activePercent = customTip ? parseFloat(customTip) : tipPercent;
-
 		if (isNaN(billNum) || isNaN(peopleNum) || peopleNum === 0) {
 			return '0.00';
 		}
 
+		const activePercent = customTip ? parseFloat(customTip) : tipPercent;
 		const tip = (billNum * (activePercent / 100)) / peopleNum;
 		return tip.toFixed(2);
 	}, [bill, people, tipPercent, customTip]);
@@ -46,59 +83,85 @@ const TipCalculatorProvider = ({ children }) => {
 		const billNum = parseFloat(bill);
 		const peopleNum = parseInt(people, 10);
 
-		const activePercent = customTip ? parseFloat(customTip) : tipPercent;
-
 		if (isNaN(billNum) || isNaN(peopleNum) || peopleNum === 0) {
 			return '0.00';
 		}
 
+		const activePercent = customTip ? parseFloat(customTip) : tipPercent;
 		const total = (billNum * (1 + activePercent / 100)) / peopleNum;
 		return total.toFixed(2);
 	}, [bill, people, tipPercent, customTip]);
 
-	// Validar número de personas
-	const handleSetPeople = (value) => {
-		// No permitir negativos, solo enteros positivos (sin decimales)
-		if (value.includes('-')) return;
-		// Permitir solo dígitos
-		const regex = /^\d*$/;
-		if (!regex.test(value) && value !== '') return;
+	// Validar número de personas (usando sanitize)
+	const handleSetPeople = useCallback(
+		(value) => {
+			// Sanitizamos: solo dígitos, sin decimales, máximo 6 dígitos por ejemplo
+			const cleaned = sanitize(value, { allowDecimal: false, maxIntegerDigits: 6 });
 
-		setPeople(value);
+			// Si el usuario intenta ingresar algo no numérico, cleaned será '' o dígitos
+			// Actualizamos el estado con la cadena limpia
+			setPeople(cleaned);
 
-		// Error si es cero (cuando no vacío)
-		if (value === '0' || (parseInt(value || '0', 10) === 0 && value !== '')) {
-			setError(true);
-		} else {
-			setError(false);
-		}
-	};
+			// Error si es cero (cuando no vacío)
+			if (cleaned === '0' || (parseInt(cleaned || '0', 10) === 0 && cleaned !== '')) {
+				setError(true);
+			} else {
+				setError(false);
+			}
+		},
+		[sanitize]
+	);
 
 	// Función para resetear todo
-	const resetCalculator = () => {
+	const resetCalculator = useCallback(() => {
 		setBill('');
 		setTipPercent(0);
 		setCustomTip('');
 		setPeople('');
 		setError(false);
-	};
+	}, []);
 
-	const value = {
-		bill,
-		setBill,
-		tipPercent,
-		setTipPercent,
-		customTip,
-		setCustomTip,
-		people,
-		setPeople: handleSetPeople,
-		error,
-		tipAmount,
-		totalAmount,
-		resetCalculator,
-	};
+	// Separar valores calculados y handlers para optimizar re-renders
+	const calculatedValues = useMemo(
+		() => ({
+			tipAmount,
+			totalAmount,
+		}),
+		[tipAmount, totalAmount]
+	);
+
+	const inputHandlers = useMemo(
+		() => ({
+			setBill,
+			setTipPercent,
+			setCustomTip,
+			setPeople: handleSetPeople,
+			resetCalculator,
+		}),
+		[handleSetPeople, resetCalculator]
+	);
+
+	const value = useMemo(
+		() => ({
+			// Estados
+			bill,
+			tipPercent,
+			customTip,
+			people,
+			error,
+			// Valores calculados
+			...calculatedValues,
+			// Handlers
+			...inputHandlers,
+		}),
+		[bill, tipPercent, customTip, people, error, calculatedValues, inputHandlers]
+	);
 
 	return <TipCalculatorContext.Provider value={value}>{children}</TipCalculatorContext.Provider>;
+};
+
+TipCalculatorProvider.propTypes = {
+	children: PropTypes.node.isRequired,
 };
 
 // Custom hook para usar el contexto
@@ -156,35 +219,62 @@ const Tips = () => {
 		error,
 	} = useTipCalculator();
 
-	const handleTipClick = (percent) => {
-		setTipPercent(percent);
-		setCustomTip(''); // Limpiar custom cuando se selecciona un botón
-	};
+	// Sanitizador para handler de bill y custom (usado localmente)
+	const sanitizeLocal = useCallback(
+		(value, { maxIntegerDigits = 12, maxDecimalDigits = 2 } = {}) => {
+			// reutilizamos la misma lógica: permitir punto y dos decimales por defecto
+			// quitar caracteres inválidos
+			let s = String(value ?? '');
+			s = s.replace(/[^0-9.]/g, '');
+			const parts = s.split('.');
+			if (parts.length > 2) {
+				s = parts.shift() + '.' + parts.join('');
+			}
+			if (s.includes('.')) {
+				const [intPart, decPart] = s.split('.');
+				const intClamped = intPart.slice(0, maxIntegerDigits);
+				const decClamped = decPart.slice(0, maxDecimalDigits);
+				s = decClamped.length > 0 ? `${intClamped}.${decClamped}` : intClamped;
+			} else {
+				s = s.slice(0, maxIntegerDigits);
+			}
+			return s;
+		},
+		[]
+	);
 
-	// Validación para bill: permitir números y máximo 2 decimales, no negativos
-	const handleBillChange = (value) => {
-		if (value.includes('-')) return;
-		// Regex: números antes del punto (cualquiera) y hasta 2 decimales opcionales
-		const regex = /^\d*(\.\d{0,2})?$/;
-		if (regex.test(value) || value === '') {
-			setBill(value);
-		}
-	};
+	const handleTipClick = useCallback(
+		(percent) => {
+			setTipPercent(percent);
+			setCustomTip(''); // Limpiar custom cuando se selecciona un botón
+		},
+		[setTipPercent, setCustomTip]
+	);
+
+	// Validación ligera para bill: permitir números y máximo 2 decimales, no negativos
+	const handleBillChange = useCallback(
+		(value) => {
+			// Sanitizamos con allow decimal y max 2 decimales
+			const cleaned = sanitizeLocal(value, { maxIntegerDigits: 12, maxDecimalDigits: 2 });
+			setBill(cleaned);
+		},
+		[setBill, sanitizeLocal]
+	);
 
 	// Validación para custom tip: máximo 3 dígitos antes, 2 después
-	const handleCustomChange = (value) => {
-		if (value.includes('-')) return;
-		const regex = /^\d{0,3}(\.\d{0,2})?$/;
-		if (regex.test(value) || value === '') {
-			setCustomTip(value);
+	const handleCustomChange = useCallback(
+		(value) => {
+			const cleaned = sanitizeLocal(value, { maxIntegerDigits: 3, maxDecimalDigits: 2 });
+			setCustomTip(cleaned);
 			setTipPercent(0); // Limpiar botones cuando se usa custom
-		}
-	};
+		},
+		[setCustomTip, setTipPercent, sanitizeLocal]
+	);
 
 	return (
 		<div className="transition-all duration-300 md:w-1/2 md:pr-8">
 			<div className="mb-8 md:mb-6">
-				<label htmlFor="bill" className="mb-3 block text-xs text-neutral-grey-500">
+				<label htmlFor="bill" className="text-md mb-3 block text-neutral-grey-500">
 					Bill amount
 				</label>
 				<Inputs
@@ -199,7 +289,7 @@ const Tips = () => {
 			</div>
 
 			<fieldset className="mb-10 border-0 p-0 md:mb-8">
-				<legend className="mb-4 text-xs font-semibold text-neutral-grey-500 md:mb-3">
+				<legend className="text-md mb-4 font-semibold text-neutral-grey-500 md:mb-3">
 					Select tip %
 				</legend>
 
@@ -247,7 +337,7 @@ const Tips = () => {
 
 			<div className="mb-8 md:mb-6">
 				<div className="mb-3 flex justify-between">
-					<label htmlFor="people" className="text-xs font-semibold text-neutral-grey-500">
+					<label htmlFor="people" className="text-md font-semibold text-neutral-grey-500">
 						Number of people
 					</label>
 					<span
@@ -289,7 +379,7 @@ const TipsResult = () => {
 				<div className="mt-4 flex justify-between">
 					<div className="flex flex-col">
 						<span className="text-white">Tip amount</span>
-						<span className="text-xs text-neutral-grey-500">/ person</span>
+						<span className="text-md text-neutral-grey-400">/ person</span>
 					</div>
 					<p
 						id="tip-amount"
@@ -308,7 +398,7 @@ const TipsResult = () => {
 				<div className="mt-10 flex justify-between">
 					<div className="flex flex-col">
 						<span className="text-white">Total</span>
-						<span className="text-xs text-neutral-grey-500">/ person</span>
+						<span className="text-md text-neutral-grey-400">/ person</span>
 					</div>
 					<p
 						id="total"
@@ -337,61 +427,86 @@ const TipsResult = () => {
 	);
 };
 
-const Inputs = ({
-	icon = 'dollar',
-	text = '0',
-	id = 'bill',
-	name = 'bill',
-	ariaLabel = '',
-	value = '',
-	onChange,
-	hasError = false,
-	ariaDescribedBy,
-}) => {
-	const fallbackLabel = icon === 'dollar' ? 'Bill amount in dollars' : 'Number of people';
+const Inputs = memo(
+	({
+		icon = 'dollar',
+		text = '0',
+		id = 'bill',
+		name = 'bill',
+		ariaLabel = '',
+		value = '',
+		onChange,
+		hasError = false,
+		ariaDescribedBy,
+	}) => {
+		const fallbackLabel = icon === 'dollar' ? 'Bill amount in dollars' : 'Number of people';
 
-	// Internally validar antes de propagar con onChange (si onChange espera solo el string válido)
-	const handleChange = (e) => {
-		const next = e.target.value;
-		// Delegar validación a la función pasada (si la hubo)
-		if (typeof onChange === 'function') {
-			onChange(next);
-		}
-	};
+		// Internally validar antes de propagar con onChange (si onChange espera solo el string válido)
+		const handleChange = useCallback(
+			(e) => {
+				const next = e.target.value;
+				// Sanitizador: para dollar permitimos punto y 2 decimales; para people solo dígitos
+				if (typeof onChange === 'function') {
+					if (icon === 'dollar') {
+						// permitir hasta 2 decimales y muchos enteros
+						let s = String(next ?? '').replace(/[^0-9.]/g, '');
+						const parts = s.split('.');
+						if (parts.length > 2) {
+							s = parts.shift() + '.' + parts.join('');
+						}
+						if (s.includes('.')) {
+							const [intPart, decPart] = s.split('.');
+							s = decPart.length > 0 ? `${intPart}.${decPart.slice(0, 2)}` : intPart;
+						}
+						onChange(s);
+					} else {
+						// people: solo dígitos, máximo 6 digitos por ejemplo
+						const cleaned = String(next ?? '')
+							.replace(/\D/g, '')
+							.slice(0, 6);
+						onChange(cleaned);
+					}
+				}
+			},
+			[onChange, icon]
+		);
 
-	return (
-		<div
-			className={`flex items-center justify-between rounded-md border-2 bg-neutral-grey-200/50 px-5 py-3 transition-all duration-300 hover:cursor-pointer ${
-				hasError ? 'border-red-500/60 hover:border-red-500/60' : 'border-transparent'
-			}`}
-			id={`${id}-container`}
-		>
-			{icon === 'dollar' ? (
-				<IconDollar className="h-4" aria-hidden="true" focusable="false" />
-			) : (
-				<IconPeople className="h-4" aria-hidden="true" focusable="false" />
-			)}
-
-			<input
-				type="text"
-				// Para bill usamos decimal (permitir punto), para people numeric (enteros)
-				inputMode={icon === 'dollar' ? 'decimal' : 'numeric'}
-				pattern={icon === 'dollar' ? '[0-9]*[.]?[0-9]*' : '[0-9]*'}
-				id={id}
-				name={name}
-				value={value}
-				onChange={handleChange}
-				placeholder={text}
-				aria-label={ariaLabel || fallbackLabel}
-				aria-invalid={hasError}
-				aria-describedby={ariaDescribedBy}
-				className={`w-24 bg-transparent text-right text-inputs font-semibold text-cyan-950 transition-all duration-300 focus:outline-none ${
-					hasError ? 'text-red-500' : 'text-cyan-950'
+		return (
+			<div
+				className={`flex items-center justify-between rounded-md border-2 bg-neutral-grey-200/50 px-5 py-3 transition-all duration-300 hover:cursor-pointer ${
+					hasError ? 'border-red-500/60 hover:border-red-500/60' : 'border-transparent'
 				}`}
-			/>
-		</div>
-	);
-};
+				id={`${id}-container`}
+			>
+				{icon === 'dollar' ? (
+					<IconDollar className="h-4" aria-hidden="true" focusable="false" />
+				) : (
+					<IconPeople className="h-4" aria-hidden="true" focusable="false" />
+				)}
+
+				<input
+					type="text"
+					// Para bill usamos decimal (permitir punto), para people numeric (enteros)
+					inputMode={icon === 'dollar' ? 'decimal' : 'numeric'}
+					pattern={icon === 'dollar' ? '^[0-9]*\\.?[0-9]{0,2}$' : '^[0-9]*$'}
+					id={id}
+					name={name}
+					value={value}
+					onChange={handleChange}
+					placeholder={text}
+					aria-label={ariaLabel || fallbackLabel}
+					aria-invalid={hasError}
+					aria-describedby={ariaDescribedBy}
+					className={`w-24 bg-transparent text-right text-inputs font-semibold text-cyan-950 transition-all duration-300 focus:outline-none ${
+						hasError ? 'text-red-500' : 'text-cyan-950'
+					}`}
+				/>
+			</div>
+		);
+	}
+);
+
+Inputs.displayName = 'Inputs';
 
 Inputs.propTypes = {
 	icon: PropTypes.oneOf(['dollar', 'people']),
@@ -405,7 +520,7 @@ Inputs.propTypes = {
 	ariaDescribedBy: PropTypes.string,
 };
 
-const Button = ({ text = 'Reset', id = '', ariaLabel = '', isActive = false, onClick }) => {
+const Button = memo(({ text = 'Reset', id = '', ariaLabel = '', isActive = false, onClick }) => {
 	return (
 		<button
 			type="button"
@@ -422,7 +537,9 @@ const Button = ({ text = 'Reset', id = '', ariaLabel = '', isActive = false, onC
 			{text}
 		</button>
 	);
-};
+});
+
+Button.displayName = 'Button';
 
 Button.propTypes = {
 	text: PropTypes.string,
