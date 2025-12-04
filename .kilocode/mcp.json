@@ -1,0 +1,12 @@
+{
+	"mcpServers": {
+		"sequentialthinking": {
+			"command": "pnpm exec",
+			"args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+		},
+		"playwright": {
+			"command": "pnpm exec",
+			"args": ["-y", "@playwright/mcp@0.0.38"]
+		}
+	}
+}
