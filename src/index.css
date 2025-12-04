@@ -10,3 +10,21 @@
 	--color-neutral-white: hsl(0, 0%, 100%);
 	--font-mono: 'Space Mono', monospace;
 }
+
+/* Optimización de fuente con font-display swap */
+@font-face {
+	font-family: 'Space Mono';
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url('/node_modules/@fontsource/space-mono/files/space-mono-latin-700-normal.woff2')
+		format('woff2');
+}
+
+/* Optimización de animaciones */
+@media (prefers-reduced-motion: reduce) {
+	* {
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+	}
+}
