@@ -34,7 +34,7 @@ Users should be able to:
 ### Links
 
 - Solution URL: [GitHub Repository](https://github.com/duquerson/tips-calculator-main)
-- Live Site URL: [Live Demo](https://yourusername.github.io/tips-calculator)
+- Live Site URL: [Live Site](https://tips-calculator-main.vercel.app/)
 
 ## My process
 
